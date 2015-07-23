@@ -30,8 +30,19 @@ char **get_fields(char *def) {
 	return NULL;
 }
 
+int get_num_fields(char *def) {
+  int num_fields = 0;
+  int idx = 0;
+  while (def[idx] != '\0') {
+    if (def[idx] == ')') num_fields++;
+    idx++;
+  }
+  return num_fields;
+}
+
 #define DEF(NAME) NAME##_def
 #define FIELDS(NAME) NAME##_fields
+#define NUM_FIELDS(NAME) NAME##_num_fields
 
 #define FIELD(TYPE, NAME) \
   TYPE NAME;
@@ -42,11 +53,18 @@ char **get_fields(char *def) {
   } NAME;          \
   char *DEF(NAME) = #__VA_ARGS__; \
   char **FIELDS(NAME) = NULL;     \
+  int NUM_FIELDS(NAME) = -1;      \
   char **NAME##_get_fields() {                \
   	if (FIELDS(NAME) == NULL) {               \
-  		FIELDS(NAME) = get_fields(DEF(NAME)); \
-  	}									      \
+  		FIELDS(NAME) = get_fields(DEF(NAME));   \
+  	}									                        \
   	return FIELDS(NAME);                      \
+  }                                           \
+  int NAME##_get_num_fields() {                       \
+    if (NUM_FIELDS(NAME) < 0) {                       \
+      NUM_FIELDS(NAME) = get_num_fields(DEF(NAME));   \
+    }                                                 \
+    return NUM_FIELDS(NAME);                          \
   }
 
 REFLECTIVE(item,
@@ -57,7 +75,8 @@ REFLECTIVE(item,
 int main() {
   item *item = malloc(sizeof(item));
   item_get_fields();
-  
+  printf("%d\n", item_get_num_fields());
+
   free(item);
   return 0;
 }
