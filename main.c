@@ -4,8 +4,13 @@
 #include <ctype.h>
 #include <stdbool.h>
 
+typedef struct {
+  int size;
+  char *name;
+} field;
+
 bool is_identifier_char(char c) {
-  return isalpha(c) || c == '_';
+  return isalnum(c) || c == '_';
 }
 
 int get_num_fields(char *def) {
@@ -18,9 +23,9 @@ int get_num_fields(char *def) {
   return num_fields;
 }
 
-char **get_fields(char *def) {
+field *get_fields(char *def) {
   int num_fields = get_num_fields(def);
-  char **fields = malloc(sizeof(char *) * num_fields);
+  field *fields = malloc(sizeof(field) * num_fields);
 
   char *curr = def;
   int idx = 0;
@@ -38,7 +43,7 @@ char **get_fields(char *def) {
     char *field = malloc(field_length + 1);
     memcpy(field, curr, field_length);
     field[field_length] = '\0';
-    fields[idx++] = field;
+    fields[idx++].name = field;
   }
   return fields;
 }
@@ -55,9 +60,9 @@ char **get_fields(char *def) {
     __VA_ARGS__    \
   } NAME;          \
   char *DEF(NAME) = #__VA_ARGS__; \
-  char **FIELDS(NAME) = NULL;     \
+  field *FIELDS(NAME) = NULL;     \
   int NUM_FIELDS(NAME) = -1;      \
-  char **NAME##_get_fields() {                \
+  field *NAME##_get_fields() {                \
     if (FIELDS(NAME) == NULL) {               \
       FIELDS(NAME) = get_fields(DEF(NAME));   \
     }                                         \
@@ -78,9 +83,9 @@ REFLECTIVE(item,
 int main() {
   item *item = malloc(sizeof(item));
   int num_fields = item_get_num_fields();
-  char **fields = item_get_fields();
+  field *fields = item_get_fields();
   for (int i = 0; i < num_fields; ++i) {
-    printf("%s\n", fields[i]);
+    printf("%s\n", fields[i].name);
   }
 
   free(item);
