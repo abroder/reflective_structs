@@ -5,29 +5,7 @@
 #include <stdbool.h>
 
 bool is_identifier_char(char c) {
-	return isalpha(c) || c == '_';
-}
-
-char **get_fields(char *def) {
-	char *curr = def;
-	while((curr = strstr(curr, "FIELD"))) {
-		curr += 5; // strlen("FIELD")
-		
-		// advance past field type
-		while (curr[0] != ',') curr++;
-
-		while (!is_identifier_char(curr[0])) curr++;
-		char *end = curr;
-		while (is_identifier_char(end[0])) end++;
-		size_t field_length = end - curr;
-
-		char *field = malloc(field_length + 1);
-		memcpy(field, curr, field_length);
-		field[field_length] = '\0';
-		printf("%s\n", field);
-		free(field);		
-	}
-	return NULL;
+  return isalpha(c) || c == '_';
 }
 
 int get_num_fields(char *def) {
@@ -40,12 +18,37 @@ int get_num_fields(char *def) {
   return num_fields;
 }
 
+char **get_fields(char *def) {
+  int num_fields = get_num_fields(def);
+  char **fields = malloc(sizeof(char *) * num_fields);
+
+  char *curr = def;
+  int idx = 0;
+  while((curr = strstr(curr, "FIELD"))) {
+    curr += 5; // strlen("FIELD")
+
+    // advance past field type
+    while (curr[0] != ',') curr++;
+
+    while (!is_identifier_char(curr[0])) curr++;
+    char *end = curr;
+    while (is_identifier_char(end[0])) end++;
+    size_t field_length = end - curr;
+
+    char *field = malloc(field_length + 1);
+    memcpy(field, curr, field_length);
+    field[field_length] = '\0';
+    fields[idx++] = field;
+  }
+  return fields;
+}
+
 #define DEF(NAME) NAME##_def
 #define FIELDS(NAME) NAME##_fields
 #define NUM_FIELDS(NAME) NAME##_num_fields
 
 #define FIELD(TYPE, NAME) \
-  TYPE NAME;
+  TYPE NAME
 
 #define REFLECTIVE(NAME, ...) \
   typedef struct { \
@@ -55,10 +58,10 @@ int get_num_fields(char *def) {
   char **FIELDS(NAME) = NULL;     \
   int NUM_FIELDS(NAME) = -1;      \
   char **NAME##_get_fields() {                \
-  	if (FIELDS(NAME) == NULL) {               \
-  		FIELDS(NAME) = get_fields(DEF(NAME));   \
-  	}									                        \
-  	return FIELDS(NAME);                      \
+    if (FIELDS(NAME) == NULL) {               \
+      FIELDS(NAME) = get_fields(DEF(NAME));   \
+    }                                         \
+    return FIELDS(NAME);                      \
   }                                           \
   int NAME##_get_num_fields() {                       \
     if (NUM_FIELDS(NAME) < 0) {                       \
@@ -68,14 +71,17 @@ int get_num_fields(char *def) {
   }
 
 REFLECTIVE(item,
-  FIELD(int, id)
-  FIELD(char *, content)
-)
+  FIELD(int, id);
+  FIELD(char *, content);
+);
 
 int main() {
   item *item = malloc(sizeof(item));
-  item_get_fields();
-  printf("%d\n", item_get_num_fields());
+  int num_fields = item_get_num_fields();
+  char **fields = item_get_fields();
+  for (int i = 0; i < num_fields; ++i) {
+    printf("%s\n", fields[i]);
+  }
 
   free(item);
   return 0;
