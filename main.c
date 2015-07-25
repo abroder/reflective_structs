@@ -9,6 +9,13 @@ typedef struct {
   char *name;
 } field;
 
+char *substr(char *str, size_t len) {
+  char *result = malloc(len + 1);
+  memcpy(result, str, len);
+  result[len] = '\0';
+  return result;
+}
+
 bool is_identifier_char(char c) {
   return isalnum(c) || c == '_';
 }
@@ -40,10 +47,7 @@ field *get_fields(char *def) {
     while (is_identifier_char(end[0])) end++;
     size_t field_length = end - curr;
 
-    char *field = malloc(field_length + 1);
-    memcpy(field, curr, field_length);
-    field[field_length] = '\0';
-    fields[idx++].name = field;
+    fields[idx++].name = substr(curr, field_length);
   }
   return fields;
 }
