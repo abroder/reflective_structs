@@ -10,4 +10,5 @@ An experiment with C macros to create structs that support reflection.
 - Solving any real problems
 - Writing maintainable and understandable code
 - Responsible memory management
+- Planning and foresight
 - Performance

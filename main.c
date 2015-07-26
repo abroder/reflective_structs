@@ -5,9 +5,27 @@
 #include <stdbool.h>
 
 typedef struct {
-  int size;
+  size_t size;
   char *name;
 } field;
+
+int size_from_type(char *str) {
+  if (strcmp(str, "int") == 0) {
+    return sizeof(int);
+  } else if (strcmp(str, "char") == 0) {
+    return sizeof(char);
+  } else if (strcmp(str, "short") == 0) {
+    return sizeof(short);
+  } else if (strcmp(str, "long") == 0) {
+    return sizeof(long);
+  } else if (strcmp(str, "float") == 0) {
+    return sizeof(float);
+  } else if (strcmp(str, "double") == 0) {
+    return sizeof(double);
+  }
+
+  return -1;
+}
 
 char *substr(char *str, size_t len) {
   char *result = malloc(len + 1);
